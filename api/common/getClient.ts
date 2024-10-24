@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-export default function client() {
+export default function getClient() {
   const supabaseUrl = "https://snrcslaycatzqpdffmxp.supabase.co";
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
 

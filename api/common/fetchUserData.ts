@@ -1,12 +1,11 @@
-import client from "./supabase";
-
+import client from "./getClient";
 
 export default function fetchUserData(id: string) {
   async function fetchData(id: string) {
     let { data, error } = await client()
-      .from('users')
-      .select('*')
-      .eq('user_id', id);
+      .from("users")
+      .select("*")
+      .eq("user_id", id);
 
     if (error) {
       throw error;
@@ -15,5 +14,5 @@ export default function fetchUserData(id: string) {
     return data;
   }
 
-    return fetchData(id);
+  return fetchData(id);
 }
