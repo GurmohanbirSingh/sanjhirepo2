@@ -79,7 +79,7 @@ export default function useOwnerClient() {
     return data;
   }
 
-  async function editNotification(house_id: string, notification: []) {
+  async function editNotification(house_id: string, notification: string[]) {
     let { data, error } = await client
       .from("house")
       .update({
