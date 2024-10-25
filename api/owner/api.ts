@@ -4,6 +4,7 @@ type House = {
   owner_id: string;
   house_name: string;
   address: string;
+  zip_code: string;
   rent: string;
   emergencyContacts: any[];
 };
@@ -11,30 +12,118 @@ type House = {
 export default function useOwnerClient() {
   const client = getClient();
 
+  // const insertHouse = async ({
+  //   owner_id,
+  //   house_name,
+  //   address,
+  //   zip_code,
+  //   rent,
+  //   emergencyContacts,
+  //   images,
+  // }: {
+  //   owner_id: string;
+  //   house_name: string;
+  //   address: string;
+  //   zip_code: string;
+  //   rent: string;
+  //   emergencyContacts: any[];
+  //   images: any[];
+  // }) => {
+  //   const { data, error } = await client
+  //     .from("house")
+  //     .insert([
+  //       {
+  //         owner_id,
+  //         house_name,
+  //         house_address: address,
+  //         rent_price: rent,
+  //         contacts: emergencyContacts,
+  //         zip_code,
+  //       },
+  //     ])
+  //     .select();
+
+  //   if (!data) throw "Not able to insert";
+
+  //   const houseId = data[0].id;
+
+  //   images.forEach(async (image, index) => {
+  //     const { data, error } = await client.storage
+  //       .from("house.images")
+  //       .upload(`/${houseId}/${index}`, image, {
+  //         cacheControl: "3600",
+  //         upsert: false,
+  //       });
+
+  //     console.log(data);
+
+  //     return { data, error };
+  //   });
+
+  //   console.log("img");
+  //   if (error) {
+  //     throw error;
+  //   }
+  // };
+
   const insertHouse = async ({
     owner_id,
     house_name,
     address,
+    zip_code,
     rent,
     emergencyContacts,
-  }: House) => {
-    const { data, error } = await client.from("house").insert([
-      {
-        owner_id,
-        house_name,
-        house_address: address,
-        rent_price: rent,
-        contacts: emergencyContacts,
-      },
-    ]);
+    images,
+  }: {
+    owner_id: string;
+    house_name: string;
+    address: string;
+    zip_code: string;
+    rent: string;
+    emergencyContacts: any[];
+    images: any[];
+  }) => {
+    const { data, error } = await client
+      .from("house")
+      .insert([
+        {
+          owner_id,
+          house_name,
+          house_address: address,
+          rent_price: rent,
+          contacts: emergencyContacts,
+          zip_code,
+        },
+      ])
+      .select();
 
-    if (error) {
-      throw error;
+    if (error || !data) throw new Error("Unable to insert house data");
+
+    const houseId = data[0].id;
+
+    try {
+      await Promise.all(
+        images.map(async (image, index) => {
+          const { data, error } = await client.storage
+            .from("house.images")
+            .upload(`/${houseId}/${index}`, image, {
+              cacheControl: "3600",
+              upsert: false,
+            });
+
+          if (error) {
+            console.error(`Error uploading image ${index}:`, error.message);
+          }
+          return { data, error };
+        })
+      );
+    } catch (uploadError) {
+      console.error("Error during image uploads:", uploadError);
+      throw new Error("Image upload failed");
     }
 
-    return data;
+    return { houseId, message: "House and images successfully inserted" };
   };
-
   async function removeTenant(house_id: string) {
     let { data, error } = await client
       .from("house")
