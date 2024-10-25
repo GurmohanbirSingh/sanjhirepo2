@@ -1,10 +1,14 @@
 "use client";
 
 import checkUser from "@/api/common/checkUser";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import UserScreen from "./User";
 
 export default function TenantPage() {
+  const [user, setUser] = useState("");
   useEffect(() => {
+    setUser(localStorage.getItem("user_id")!);
+
     const checkOwnership = async () => {
       await checkUser().then((isOwner) => {
         if (isOwner) {
@@ -17,7 +21,9 @@ export default function TenantPage() {
   }, []);
   return (
     <div>
-      <h1>Tenant Page</h1>
+      
+
+     {user&& <UserScreen userId={user} />}
     </div>
   );
 }
